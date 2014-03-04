@@ -30,7 +30,7 @@ if [[ ! -f $BUILD_DIR/404.html && ! -f $BUILD_DIR/404.htm ]]; then
 fi
 
 if [[ ! $SERVER_TYPE ]]; then
-  SERVER_TYPE="node"
+  SERVER_TYPE="nginx"
 fi
 
 if [[ $SERVER_TYPE == "node" || $SERVER_TYPE == "node.js" ]]; then
@@ -111,10 +111,38 @@ elif [[ $SERVER_TYPE == "express" || $SERVER_TYPE == "express.js" ]]; then
   NODE_BUILDPACK_DIR=$(mktemp -d -t node.XXXXXX)
   git clone --quiet https://github.com/heroku/heroku-buildpack-nodejs.git $NODE_BUILDPACK_DIR
   mv -f $NODE_BUILDPACK_DIR/vendor/* $LP_DIR/vendor
+  mv $NODE_BUILDPACK_DIR/bin/common.sh $LP_DIR/bin/common.sh
   mv $NODE_BUILDPACK_DIR/bin/compile $LP_DIR/bin/compile_node
   $LP_DIR/bin/compile_node $BUILD_DIR $CACHE_DIR | indent
   echo "       done."
   rm -fr $NODE_BUILDPACK_DIR
+
+elif [[ $SERVER_TYPE == "nginx" ]]; then
+
+  # init default nginx configuration ----------
+
+  if [ -d "${BUILD_DIR}/conf" ]; then
+    echo "-----> Using existing nginx configuration."
+  else
+    echo -n "-----> Vendoring default nginx configuration into slug... "
+    if [[ ! -d ${BUILD_DIR}/conf ]]; then
+      mkdir ${BUILD_DIR}/conf
+    fi
+    mv $LP_DIR/vendor/mime.types ${BUILD_DIR}/conf/mime.types
+    mv $LP_DIR/vendor/nginx.conf.erb ${BUILD_DIR}/conf/nginx.conf.erb
+    echo "done"
+  fi
+
+  # Nginx -------------------------------------
+
+  echo "-----> Initiating Nginx Buildpack... "
+  NGINX_BUILDPACK_DIR=$(mktemp -d -t nginx.XXXXXX)
+  git clone --quiet https://github.com/ripple/heroku-buildpack-nginx.git $NGINX_BUILDPACK_DIR
+  mv -f $NGINX_BUILDPACK_DIR/vendor/* $LP_DIR/vendor
+  mv $NGINX_BUILDPACK_DIR/bin/compile $LP_DIR/bin/compile_nginx
+  $LP_DIR/bin/compile_nginx $BUILD_DIR $CACHE_DIR | indent
+  echo " done."
+  rm -fr $NGINX_BUILDPACK_DIR
 
 fi
 
