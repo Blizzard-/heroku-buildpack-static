@@ -4,6 +4,7 @@ path          = require 'path'
 http          = require 'http'
 zlib          = require 'zlib'
 StreamCache   = require 'StreamCache'
+path	      = require 'path'
 
 files_cached = 0
 generateFileCache = (file) ->
@@ -30,7 +31,12 @@ generateFileCache = (file) ->
     files_cached--
   src.pipe data_raw
 
-_STATIC_DIR = __dirname
+staticSubdir = "."
+if process.env.STATIC_SUBDIR
+  staticSubdir = process.env.STATIC_SUBDIR
+end
+
+_STATIC_DIR = path.join(__dirname, staticSubdir)
 
 fileCache = {}
 fbp = 0

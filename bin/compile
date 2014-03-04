@@ -29,7 +29,7 @@ if [[ $BUILD_WEB_ASSETS || -f $BUILD_DIR/_webassets.cfg ]]; then
   fi
   echo "-----> Building Web Assets... "
   WEBASSETS_BUILDPACK_DIR=$(mktemp -d -t webassets.XXXXXX)
-  git clone --quiet https://github.com/abhishekmunie/heroku-buildpack-webassets.git $WEBASSETS_BUILDPACK_DIR
+  git clone --quiet https://github.com/ripple/heroku-buildpack-webassets.git $WEBASSETS_BUILDPACK_DIR
   $WEBASSETS_BUILDPACK_DIR/bin/compile $BUILD_DIR $CACHE_DIR | indent
   echo "       done."
   rm -fr $WEBASSETS_BUILDPACK_DIR
@@ -126,32 +126,5 @@ elif [[ $SERVER_TYPE == "express" || $SERVER_TYPE == "express.js" ]]; then
   $LP_DIR/bin/compile_node $BUILD_DIR $CACHE_DIR | indent
   echo "       done."
   rm -fr $NODE_BUILDPACK_DIR
-
-elif [[ $SERVER_TYPE == "nginx" ]]; then
-
-  # init default nginx configuration ----------
-
-  if [ -d "${BUILD_DIR}/conf" ]; then
-    echo "-----> Using existing nginx configuration."
-  else
-    echo -n "-----> Vendoring default nginx configuration into slug... "
-    if [[ ! -d ${BUILD_DIR}/conf ]]; then
-      mkdir ${BUILD_DIR}/conf
-    fi
-    mv $LP_DIR/vendor/mime.types ${BUILD_DIR}/conf/mime.types
-    mv $LP_DIR/vendor/nginx.conf.erb ${BUILD_DIR}/conf/nginx.conf.erb
-    echo "done"
-  fi
-
-  # Nginx -------------------------------------
-
-  echo "-----> Initiating Nginx Buildpack... "
-  NGINX_BUILDPACK_DIR=$(mktemp -d -t nginx.XXXXXX)
-  git clone --quiet https://github.com/abhishekmunie/heroku-buildpack-nginx.git $NGINX_BUILDPACK_DIR
-  mv -f $NGINX_BUILDPACK_DIR/vendor/* $LP_DIR/vendor
-  mv $NGINX_BUILDPACK_DIR/bin/compile $LP_DIR/bin/compile_nginx
-  $LP_DIR/bin/compile_nginx $BUILD_DIR $CACHE_DIR | indent
-  echo "       done."
-  rm -fr $NGINX_BUILDPACK_DIR
 
 fi
