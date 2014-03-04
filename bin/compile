@@ -81,6 +81,7 @@ if [[ $SERVER_TYPE == "node" || $SERVER_TYPE == "node.js" ]]; then
   NODE_BUILDPACK_DIR=$(mktemp -d -t node.XXXXXX)
   git clone --quiet https://github.com/heroku/heroku-buildpack-nodejs.git $NODE_BUILDPACK_DIR
   mv -f $NODE_BUILDPACK_DIR/vendor/* $LP_DIR/vendor
+  mv -f $NODE_BUILDPACK_DIR/bin/common.sh $LP_DIR/bin/common.sh
   mv $NODE_BUILDPACK_DIR/bin/compile $LP_DIR/bin/compile_node
   $LP_DIR/bin/compile_node $BUILD_DIR $CACHE_DIR | indent
   echo "       done."
